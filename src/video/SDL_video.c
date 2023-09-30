@@ -34,20 +34,16 @@
 
 #include "SDL_syswm.h"
 
-#if SDL_VIDEO_OPENGL
-#include "SDL_opengl.h"
-#endif /* SDL_VIDEO_OPENGL */
-
-#if SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL
 #include "SDL_opengles.h"
 #endif /* SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL */
 
 /* GL and GLES2 headers conflict on Linux 32 bits */
-#if SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_OPENGL
 #include "SDL_opengles2.h"
 #endif /* SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL */
 
-#if !SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL
 #ifndef GL_CONTEXT_RELEASE_BEHAVIOR_KHR
 #define GL_CONTEXT_RELEASE_BEHAVIOR_KHR 0x82FB
 #endif
@@ -3749,10 +3745,10 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
      * the function itself doesn't exist prior to OpenGL 3 and OpenGL ES 2.
      */
 #if SDL_VIDEO_OPENGL
-    const GLubyte *(APIENTRY * glGetStringFunc)(GLenum name);
-    void(APIENTRY * glGetFramebufferAttachmentParameterivFunc)(GLenum target, GLenum attachment, GLenum pname, GLint * params);
-    GLenum attachment = GL_BACK_LEFT;
-    GLenum attachmentattrib = 0;
+    // const GLubyte *(APIENTRY * glGetStringFunc)(GLenum name);
+    // void(APIENTRY * glGetFramebufferAttachmentParameterivFunc)(GLenum target, GLenum attachment, GLenum pname, GLint * params);
+    // GLenum attachment = GL_BACK_LEFT;
+    // GLenum attachmentattrib = 0;
 #endif
 
     if (value == NULL) {
@@ -3769,32 +3765,32 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     switch (attr) {
     case SDL_GL_RED_SIZE:
 #if SDL_VIDEO_OPENGL
-        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE;
+        // attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE;
 #endif
         attrib = GL_RED_BITS;
         break;
     case SDL_GL_BLUE_SIZE:
 #if SDL_VIDEO_OPENGL
-        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE;
+        // attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE;
 #endif
         attrib = GL_BLUE_BITS;
         break;
     case SDL_GL_GREEN_SIZE:
 #if SDL_VIDEO_OPENGL
-        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE;
+        // attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE;
 #endif
         attrib = GL_GREEN_BITS;
         break;
     case SDL_GL_ALPHA_SIZE:
 #if SDL_VIDEO_OPENGL
-        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE;
+        // attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE;
 #endif
         attrib = GL_ALPHA_BITS;
         break;
     case SDL_GL_DOUBLEBUFFER:
 #if SDL_VIDEO_OPENGL
-        attrib = GL_DOUBLEBUFFER;
-        break;
+        // attrib = GL_DOUBLEBUFFER;
+        // break;
 #else
         /* OpenGL ES 1.0 and above specifications have EGL_SINGLE_BUFFER      */
         /* parameter which switches double buffer to single buffer. OpenGL ES */
@@ -3804,35 +3800,35 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 #endif
     case SDL_GL_DEPTH_SIZE:
 #if SDL_VIDEO_OPENGL
-        attachment = GL_DEPTH;
-        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE;
+        // attachment = GL_DEPTH;
+        // attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE;
 #endif
         attrib = GL_DEPTH_BITS;
         break;
     case SDL_GL_STENCIL_SIZE:
 #if SDL_VIDEO_OPENGL
-        attachment = GL_STENCIL;
-        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE;
+        // attachment = GL_STENCIL;
+        // attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE;
 #endif
         attrib = GL_STENCIL_BITS;
         break;
 #if SDL_VIDEO_OPENGL
-    case SDL_GL_ACCUM_RED_SIZE:
-        attrib = GL_ACCUM_RED_BITS;
-        break;
-    case SDL_GL_ACCUM_GREEN_SIZE:
-        attrib = GL_ACCUM_GREEN_BITS;
-        break;
-    case SDL_GL_ACCUM_BLUE_SIZE:
-        attrib = GL_ACCUM_BLUE_BITS;
-        break;
-    case SDL_GL_ACCUM_ALPHA_SIZE:
-        attrib = GL_ACCUM_ALPHA_BITS;
-        break;
-    case SDL_GL_STEREO:
-        attrib = GL_STEREO;
-        break;
-#else
+    // case SDL_GL_ACCUM_RED_SIZE:
+    //     attrib = GL_ACCUM_RED_BITS;
+    //     break;
+    // case SDL_GL_ACCUM_GREEN_SIZE:
+    //     attrib = GL_ACCUM_GREEN_BITS;
+    //     break;
+    // case SDL_GL_ACCUM_BLUE_SIZE:
+    //     attrib = GL_ACCUM_BLUE_BITS;
+    //     break;
+    // case SDL_GL_ACCUM_ALPHA_SIZE:
+    //     attrib = GL_ACCUM_ALPHA_BITS;
+    //     break;
+    // case SDL_GL_STEREO:
+    //     attrib = GL_STEREO;
+    //     break;
+// #else
     case SDL_GL_ACCUM_RED_SIZE:
     case SDL_GL_ACCUM_GREEN_SIZE:
     case SDL_GL_ACCUM_BLUE_SIZE:
@@ -3850,8 +3846,8 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         break;
     case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
 #if SDL_VIDEO_OPENGL
-        attrib = GL_CONTEXT_RELEASE_BEHAVIOR;
-#else
+//         attrib = GL_CONTEXT_RELEASE_BEHAVIOR;
+// #else
         attrib = GL_CONTEXT_RELEASE_BEHAVIOR_KHR;
 #endif
         break;
@@ -3937,35 +3933,35 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     }
 
 #if SDL_VIDEO_OPENGL
-    glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
-    if (glGetStringFunc == NULL) {
-        return -1;
-    }
+    // glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
+    // if (glGetStringFunc == NULL) {
+    //     return -1;
+    // }
 
-    if (attachmentattrib && isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION))) {
-        /* glGetFramebufferAttachmentParameteriv needs to operate on the window framebuffer for this, so bind FBO 0 if necessary. */
-        GLint current_fbo = 0;
-        void(APIENTRY * glGetIntegervFunc)(GLenum pname, GLint * params) = SDL_GL_GetProcAddress("glGetIntegerv");
-        void(APIENTRY * glBindFramebufferFunc)(GLenum target, GLuint fbo) = SDL_GL_GetProcAddress("glBindFramebuffer");
-        if (glGetIntegervFunc && glBindFramebufferFunc) {
-            glGetIntegervFunc(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-        }
-
-        glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
-        if (glGetFramebufferAttachmentParameterivFunc) {
-            if (glBindFramebufferFunc && (current_fbo != 0)) {
-                glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, 0);
-            }
-            glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *)value);
-            if (glBindFramebufferFunc && (current_fbo != 0)) {
-                glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, current_fbo);
-            }
-        } else {
-            return -1;
-        }
-    } else
+    // if (attachmentattrib && isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION))) {
+    //     /* glGetFramebufferAttachmentParameteriv needs to operate on the window framebuffer for this, so bind FBO 0 if necessary. */
+    //     GLint current_fbo = 0;
+    //     void(APIENTRY * glGetIntegervFunc)(GLenum pname, GLint * params) = SDL_GL_GetProcAddress("glGetIntegerv");
+    //     void(APIENTRY * glBindFramebufferFunc)(GLenum target, GLuint fbo) = SDL_GL_GetProcAddress("glBindFramebuffer");
+    //     if (glGetIntegervFunc && glBindFramebufferFunc) {
+    //         glGetIntegervFunc(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+    //     }
+    //
+    //     glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
+    //     if (glGetFramebufferAttachmentParameterivFunc) {
+    //         if (glBindFramebufferFunc && (current_fbo != 0)) {
+    //             glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, 0);
+    //         }
+    //         glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *)value);
+    //         if (glBindFramebufferFunc && (current_fbo != 0)) {
+    //             glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, current_fbo);
+    //         }
+    //     } else {
+    //         return -1;
+    //     }
+    // } else
 #endif
-    {
+    // {
         void(APIENTRY * glGetIntegervFunc)(GLenum pname, GLint * params);
         glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
         if (glGetIntegervFunc) {
@@ -3973,7 +3969,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         } else {
             return -1;
         }
-    }
+    // }
 
     glGetErrorFunc = SDL_GL_GetProcAddress("glGetError");
     if (glGetErrorFunc == NULL) {
