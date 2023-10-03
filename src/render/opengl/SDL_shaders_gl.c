@@ -88,60 +88,57 @@ struct GL_ShaderContext
 "const vec3 offset = vec3(0, -0.501960814, -0.501960814);\n"    \
 "\n"                                                            \
 "// RGB coefficients \n"                                        \
-"const vec3 Rcoeff = vec3(1,  0.000,  1.402);\n"                \
-"const vec3 Gcoeff = vec3(1, -0.3441, -0.7141);\n"              \
-"const vec3 Bcoeff = vec3(1,  1.772,  0.000);\n"                \
+"const mat3 matrix = mat3( 1,       1,        1,\n"             \
+"                          0,      -0.3441,   1.772,\n"         \
+"                          1.402,  -0.7141,   0);\n"            \
+"\n"                                                            \
 
 #define BT601_SHADER_CONSTANTS                                  \
 "// YUV offset \n"                                              \
 "const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n" \
 "\n"                                                            \
 "// RGB coefficients \n"                                        \
-"const vec3 Rcoeff = vec3(1.1644,  0.000,  1.596);\n"           \
-"const vec3 Gcoeff = vec3(1.1644, -0.3918, -0.813);\n"          \
-"const vec3 Bcoeff = vec3(1.1644,  2.0172,  0.000);\n"          \
+"const mat3 matrix = mat3( 1.1644,  1.1644,   1.1644,\n"        \
+"                          0,      -0.3918,   2.0172,\n"        \
+"                          1.596,  -0.813,    0);\n"            \
+"\n"                                                            \
 
 #define BT709_SHADER_CONSTANTS                                  \
 "// YUV offset \n"                                              \
 "const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n" \
 "\n"                                                            \
 "// RGB coefficients \n"                                        \
-"const vec3 Rcoeff = vec3(1.1644,  0.000,  1.7927);\n"          \
-"const vec3 Gcoeff = vec3(1.1644, -0.2132, -0.5329);\n"         \
-"const vec3 Bcoeff = vec3(1.1644,  2.1124,  0.000);\n"          \
+"const mat3 matrix = mat3( 1.1644,  1.1644,   1.1644,\n"        \
+"                          0,      -0.2132,   2.1124,\n"        \
+"                          1.7927, -0.5329,   0);\n"            \
+"\n"                                                            \
 
 #define YUV_SHADER_PROLOGUE                                     \
-"varying vec4 v_color;\n"                                       \
-"varying vec2 v_texCoord;\n"                                    \
-"uniform sampler2D tex0; // Y \n"                               \
-"uniform sampler2D tex1; // U \n"                               \
-"uniform sampler2D tex2; // V \n"                               \
+"uniform sampler2D u_texture;\n"                                \
+"uniform sampler2D u_texture_u;\n"                              \
+"uniform sampler2D u_texture_v;\n"                              \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
 "\n"                                                            \
 
 #define YUV_SHADER_BODY                                         \
-"\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
-"    vec2 tcoord;\n"                                            \
-"    vec3 yuv, rgb;\n"                                          \
+"    mediump vec3 yuv;\n"                                       \
+"    lowp vec3 rgb;\n"                                          \
 "\n"                                                            \
-"    // Get the Y value \n"                                     \
-"    tcoord = v_texCoord;\n"                                    \
-"    yuv.x = texture2D(tex0, tcoord).r;\n"                      \
-"\n"                                                            \
-"    // Get the U and V values \n"                              \
-"    tcoord *= UVCoordScale;\n"                                 \
-"    yuv.y = texture2D(tex1, tcoord).r;\n"                      \
-"    yuv.z = texture2D(tex2, tcoord).r;\n"                      \
+"    // Get the YUV values \n"                                  \
+"    yuv.x = texture2D(u_texture,   v_texCoord).r;\n"           \
+"    yuv.y = texture2D(u_texture_u, v_texCoord).r;\n"           \
+"    yuv.z = texture2D(u_texture_v, v_texCoord).r;\n"           \
 "\n"                                                            \
 "    // Do the color transform \n"                              \
 "    yuv += offset;\n"                                          \
-"    rgb.r = dot(yuv, Rcoeff);\n"                               \
-"    rgb.g = dot(yuv, Gcoeff);\n"                               \
-"    rgb.b = dot(yuv, Bcoeff);\n"                               \
+"    rgb = matrix * yuv;\n"                                     \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
-"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
+"    gl_FragColor = vec4(rgb, 1);\n"                            \
+"    gl_FragColor *= v_color;\n"                                \
 "}"                                                             \
 
 #define NV12_SHADER_PROLOGUE                                    \
@@ -152,53 +149,41 @@ struct GL_ShaderContext
 "\n"                                                            \
 
 #define NV12_RA_SHADER_BODY                                     \
-"\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
-"    vec2 tcoord;\n"                                            \
-"    vec3 yuv, rgb;\n"                                          \
+"    mediump vec3 yuv;\n"                                       \
+"    lowp vec3 rgb;\n"                                          \
 "\n"                                                            \
-"    // Get the Y value \n"                                     \
-"    tcoord = v_texCoord;\n"                                    \
-"    yuv.x = texture2D(tex0, tcoord).r;\n"                      \
-"\n"                                                            \
-"    // Get the U and V values \n"                              \
-"    tcoord *= UVCoordScale;\n"                                 \
-"    yuv.yz = texture2D(tex1, tcoord).ra;\n"                    \
+"    // Get the YUV values \n"                                  \
+"    yuv.x = texture2D(u_texture,   v_texCoord).r;\n"           \
+"    yuv.yz = texture2D(u_texture_u, v_texCoord).ra;\n"         \
 "\n"                                                            \
 "    // Do the color transform \n"                              \
 "    yuv += offset;\n"                                          \
-"    rgb.r = dot(yuv, Rcoeff);\n"                               \
-"    rgb.g = dot(yuv, Gcoeff);\n"                               \
-"    rgb.b = dot(yuv, Bcoeff);\n"                               \
+"    rgb = matrix * yuv;\n"                                     \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
-"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
+"    gl_FragColor = vec4(rgb, 1);\n"                            \
+"    gl_FragColor *= v_color;\n"                                \
 "}"                                                             \
 
 #define NV12_RG_SHADER_BODY                                     \
-"\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
-"    vec2 tcoord;\n"                                            \
-"    vec3 yuv, rgb;\n"                                          \
+"    mediump vec3 yuv;\n"                                       \
+"    lowp vec3 rgb;\n"                                          \
 "\n"                                                            \
-"    // Get the Y value \n"                                     \
-"    tcoord = v_texCoord;\n"                                    \
-"    yuv.x = texture2D(tex0, tcoord).r;\n"                      \
-"\n"                                                            \
-"    // Get the U and V values \n"                              \
-"    tcoord *= UVCoordScale;\n"                                 \
-"    yuv.yz = texture2D(tex1, tcoord).rg;\n"                    \
+"    // Get the YUV values \n"                                  \
+"    yuv.x = texture2D(u_texture,   v_texCoord).r;\n"           \
+"    yuv.yz = texture2D(u_texture_u, v_texCoord).rg;\n"         \
 "\n"                                                            \
 "    // Do the color transform \n"                              \
 "    yuv += offset;\n"                                          \
-"    rgb.r = dot(yuv, Rcoeff);\n"                               \
-"    rgb.g = dot(yuv, Gcoeff);\n"                               \
-"    rgb.b = dot(yuv, Bcoeff);\n"                               \
+"    rgb = matrix * yuv;\n"                                     \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
-"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
+"    gl_FragColor = vec4(rgb, 1);\n"                            \
+"    gl_FragColor *= v_color;\n"                                \
 "}"                                                             \
 
 #define NV21_SHADER_PROLOGUE                                    \
@@ -209,28 +194,22 @@ struct GL_ShaderContext
 "\n"                                                            \
 
 #define NV21_SHADER_BODY                                        \
-"\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
-"    vec2 tcoord;\n"                                            \
-"    vec3 yuv, rgb;\n"                                          \
+"    mediump vec3 yuv;\n"                                       \
+"    lowp vec3 rgb;\n"                                          \
 "\n"                                                            \
-"    // Get the Y value \n"                                     \
-"    tcoord = v_texCoord;\n"                                    \
-"    yuv.x = texture2D(tex0, tcoord).r;\n"                      \
-"\n"                                                            \
-"    // Get the U and V values \n"                              \
-"    tcoord *= UVCoordScale;\n"                                 \
-"    yuv.yz = texture2D(tex1, tcoord).ar;\n"                    \
+"    // Get the YUV values \n"                                  \
+"    yuv.x = texture2D(u_texture,   v_texCoord).r;\n"           \
+"    yuv.yz = texture2D(u_texture_u, v_texCoord).ar;\n"         \
 "\n"                                                            \
 "    // Do the color transform \n"                              \
 "    yuv += offset;\n"                                          \
-"    rgb.r = dot(yuv, Rcoeff);\n"                               \
-"    rgb.g = dot(yuv, Gcoeff);\n"                               \
-"    rgb.b = dot(yuv, Bcoeff);\n"                               \
+"    rgb = matrix * yuv;\n"                                     \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
-"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
+"    gl_FragColor = vec4(rgb, 1);\n"                            \
+"    gl_FragColor *= v_color;\n"                                \
 "}"                                                             \
 
 /*
